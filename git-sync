@@ -58,6 +58,13 @@ __gitdir()
 	fi
 }
 
+log ()
+{
+    if [ $verbose -eq 1 ]; then
+        echo $*
+    fi
+}
+
 # echos repo state
 git_repo_state ()
 {
@@ -163,7 +170,7 @@ sync_state()
 # exit, issue warning if not in sync
 exit_assuming_sync() {
     if [ "equal" == "$(sync_state)" ] ; then
-	echo "git-sync: In sync, all fine."
+	log "git-sync: In sync, all fine."
 	exit 0;
     else
 	echo "git-sync: Synchronization FAILED! You should definitely check your repository carefully!"
@@ -175,11 +182,27 @@ exit_assuming_sync() {
 #
 #        Here git-sync actually starts
 #
+verbose=0
+
+while getopts "hv" opt; do
+    case "$opt" in
+    h|\?)
+        echo "Usage: $0 [check | sync]"
+        exit 0
+        ;;
+    v)  verbose=1
+        ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+[ "$1" = "--" ] && shift
 
 # first some sanity checks
 rstate="$(git_repo_state)"
 if [[ -z "$rstate" || "|DIRTY" = "$rstate" ]]; then
-    echo "git-sync: Preparing. Repo in $(__gitdir)"
+    log "git-sync: Preparing. Repo in $(__gitdir)"
 elif [[ "NOGIT" = "$rstate" ]] ; then
     echo "git-sync: No git repository detected. Exiting."
     exit 128 # matches git's error code
@@ -233,9 +256,9 @@ else
     exit 100
 fi
 
-echo "git-sync: Mode $mode"
+log "git-sync: Mode $mode"
 
-echo "git-sync: Using $remote_name/$branch_name"
+log "git-sync: Using $remote_name/$branch_name"
 
 # check for intentionally unhandled file states
 if [ ! -z "$(check_initial_file_state)" ] ; then
@@ -277,7 +300,7 @@ fi
 
 # fetch remote to get to the current sync state
 # TODO make fetching/pushing optional
-echo "git-sync: Fetching from $remote_name"
+log "git-sync: Fetching from $remote_name"
 git fetch $remote_name
 if [ $? != 0 ] ; then
     echo "git-sync: git fetch $remote_name returned non-zero. Likely a network problem; exiting."
