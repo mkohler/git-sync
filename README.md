@@ -129,3 +129,34 @@ Attribution is appreciated, but not required.
 # Thanks
 
 Thanks go to all the people behind git.
+
+# Setting up a remote gitsync repo
+
+# On the server
+
+    mkdir ~/gitsync_repos/foo.git
+    cd ~/gitsync_repos/foo.git
+    git --bare init
+
+# On the first client
+
+    $ git remote add --track master origin user@server:gitsync_repos/foo.git
+    $ git push -u origin master
+    $ git config --bool branch.master.sync true
+    $ git config --bool branch.master.syncNewFiles true
+
+# On subsequent clients::
+
+    $ git clone user@server:gitsync_repos/foo.git
+    $ cd foo
+    $ git config --bool branch.master.sync true
+    $ git config --bool branch.master.syncNewFiles true
+
+
+
+Syncing between desktop and Android phone with FolderSync
+
+odin with bare repos (via ssh)
+    gitsync to loki
+    gitsync to directory on odin
+        sftp to Android
